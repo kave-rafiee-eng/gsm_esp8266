@@ -3,8 +3,6 @@
 
 
 
-
-
 void read_json_advance(){
 
   char temp_json_name_w1[50];
@@ -13,11 +11,17 @@ void read_json_advance(){
   char temp_json_name_r1[50];
   char temp_json_data_r1[50];  
 
+  char temp_serial[50];
+  char temp_url[50];  
+
   String json_name_w1 = doc["name_w1"];
   String json_data_w1 = doc["data_w1"];
 
   String json_name_r1 = doc["name_r1"];
   String json_data_r1 = doc["data_r1"];
+
+  String serial = doc["serial"];
+  String url = doc["url"];
 
   /*Serial.print("name_w1 = ");
   Serial.println( json_name_w1);
@@ -31,6 +35,25 @@ void read_json_advance(){
   Serial.println( "  ------   " );*/
 
   //Serial.println("-- JSON EXTEND ---");
+
+  if( serial == "null"){}
+  else { 
+    serial.toCharArray(temp_serial, serial.length()+1);
+    strncpy(advance_json_serial, temp_serial, sizeof advance_json_serial);   
+    advance_serial_F=1;
+    //Serial.print("seial = ");
+    //Serial.println( temp_serial);
+  }
+
+  if( url == "null"){}
+  else { 
+    advance_url_F=1;
+    url.toCharArray(temp_url, url.length()+1);
+    strncpy(advance_json_url, temp_url, sizeof advance_json_url);   
+    //Serial.print("url_get = ");
+    //Serial.println( temp_url);
+  }
+
 
   if( json_name_w1 == "null"){}
   else { 

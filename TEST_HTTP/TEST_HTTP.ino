@@ -19,6 +19,11 @@ bool advance_read_F=0;
 bool advance_send_F=0;
 bool advance_serial_F=0;
 
+bool advance_url_F=0;
+
+char advance_json_serial[50];
+char advance_json_url[50];
+
 char advance_json_name_w1[50];
 char advance_json_data_w1[50];
 
@@ -51,27 +56,38 @@ void setup() {
 
 void loop() {
 
-  if ((WiFiMulti.run() == WL_CONNECTED) && (advance_send_F ||  advance_read_F || advance_serial_F)) {
+  if ((WiFiMulti.run() == WL_CONNECTED) && ( advance_serial_F)) {
 
     WiFiClient client;
 
     HTTPClient http;
 
-    String url = "http://www.ravis-gsm.ir/GSM_RAVIS/gsm_connection.php?serial=100&";
+    String url_http = "http://www.ravis-gsm.ir/GSM_RAVIS/gsm_connection.php?";
 
-    if( advance_send_F){advance_send_F=0;
-      url += "name1=";
-      url += advance_json_name_w1;
-      url += "&"; 
-      url += "data1=";
-      url += advance_json_data_w1; 
-      url += "&"; 
+    if( advance_serial_F){ advance_serial_F=0;
+      url_http += "serial=";
+      url_http += advance_json_serial;
+      url_http += "&"; 
     }
 
-    Serial.println(url);
+    if( advance_send_F){advance_send_F=0;
+      url_http += "name1=";
+      url_http += advance_json_name_w1;
+      url_http += "&"; 
+      url_http += "data1=";
+      url_http += advance_json_data_w1; 
+      url_http += "&"; 
+    }
+
+    if( advance_url_F){ advance_url_F=0;
+      url_http += advance_json_url;
+      url_http += "&"; 
+    }
+
+    Serial.println(url_http);
 
     //Serial.print("[HTTP] begin...\n");
-    if (http.begin(client,url )) {  // HTTP
+    if (http.begin(client,url_http )) {  // HTTP
 
       //Serial.print("[HTTP] GET...\n");
       // start connection and send HTTP header
@@ -117,11 +133,11 @@ void loop() {
     
   }
 
-//{"name_w1":"advance_settin*general*travel_time","data_w1":10,}
+//{"serial":"100","name_w1":"advance_settin*general*travel_time","data_w1":10,"url":"SW_ENABLE=1&"}
 
 //{"name_r1":"advance_settin*general*travel_time","data_r1":10,}
 //{"name_r1":"-","data_r1":1,}
-//{"name_w1":"advance_settin*general*travel_time","data_w1":10,"name_r1":"advance_settin*general*travel_time","data_r1":10,}
+//{"serial":"100","data_w1":10,"name_r1":"advance_settin*general*travel_time","data_r1":10,}
 
   
   /*i++;
@@ -141,34 +157,25 @@ void loop() {
 
       char data=0;
       data = Serial.read();
-      //if( data = '}'){
-        temp[temp_i] = data;
-        temp_i++;
-      //}
+
+      temp[temp_i] = data;
+      temp_i++;
 
     }
 
     temp[temp_i] = '\n';
 
-    /*for(i=0; i<40; i++ ){
-
-      Serial.write(temp[i]);
-    }*/
-    //Serial.println(temp);
-    //uart_data += Serial.readString();
-
-    //uart_data.toCharArray(temp, uart_data.length()+1);
-    //strncpy(temp, uart_data, sizeof temp); 
-
     if( strstr(temp,"}") - (char *)&temp[0] > 0  ){
 
-      advance_serial_F=1;
+      //advance_serial_F=1;
       //Serial.println(temp);
 
       deserializeJson(doc, temp);
       read_json_advance();
 
       uart_data.remove(0, uart_data.length()+1);
+
+      Serial.println("****");
 
     }
 
