@@ -15,23 +15,14 @@ DynamicJsonDocument doc(1000);
 
 char i=0;
 
-bool advance_read_F=0;
-bool advance_send_F=0;
+bool connection_test_F=0;
 bool advance_serial_F=0;
-
 bool advance_url_F=0;
+bool send_to_server_F=0;
+
 
 char advance_json_serial[50];
 char advance_json_url[50];
-
-char advance_json_name_w1[50];
-char advance_json_data_w1[50];
-
-char advance_json_name_r1[50];
-char advance_json_data_r1[50];
-
-char travel_time[10];
-char door_control_type[10];
 
 char temp[200];
 int temp_i=0;
@@ -39,7 +30,6 @@ int temp_i=0;
 char travel_time_send_F;
 char door_control_type_send_F;
 
-String uart_data;
 
 void setup() {
 
@@ -56,7 +46,7 @@ void setup() {
 
 void loop() {
 
-  if ((WiFiMulti.run() == WL_CONNECTED) && ( advance_serial_F)) {
+  if ((WiFiMulti.run() == WL_CONNECTED) && ( send_to_server_F )) {
 
     WiFiClient client;
 
@@ -70,27 +60,22 @@ void loop() {
       url_http += "&"; 
     }
 
-    if( advance_send_F){advance_send_F=0;
-      url_http += "name1=";
-      url_http += advance_json_name_w1;
-      url_http += "&"; 
-      url_http += "data1=";
-      url_http += advance_json_data_w1; 
-      url_http += "&"; 
-    }
-
     if( advance_url_F){ advance_url_F=0;
       url_http += advance_json_url;
       url_http += "&"; 
     }
 
+    if( connection_test_F){ connection_test_F=0;
+      url_http += "connection_test=?";
+      url_http += "&"; 
+    }
+
     Serial.println(url_http);
 
-    //Serial.print("[HTTP] begin...\n");
+    Serial.print("[HTTP] begin...\n");
     if (http.begin(client,url_http )) {  // HTTP
 
-      //Serial.print("[HTTP] GET...\n");
-      // start connection and send HTTP header
+      Serial.print("[HTTP] GET...\n");
       int httpCode = http.GET();
 
       // httpCode will be negative on error
@@ -114,98 +99,65 @@ void loop() {
       } 
       else {
         //Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+        Serial.println("{\"error\":\"http_code\",}");
       }
 
       http.end();
 
-      advance_send_F=0;
-      advance_read_F=0;
       advance_serial_F=0;
+      connection_test_F=0;
+      advance_url_F=0;
+      send_to_server_F=0;
 
     } else {
-      Serial.println("[HTTP] Unable to connect");
+      Serial.println("{\"error\":\"http_begin\",}");
     }
   }
   else{
 
     if ((WiFiMulti.run() == WL_CONNECTED) ){}
-    else Serial.println("WIFI....");
+    else Serial.println("{\"error\":\"wifi\",}");
     
   }
 
-//{"serial":"100","name_w1":"advance_settin*general*travel_time","data_w1":10,"url":"SW_ENABLE=1&"}
 
-//{"name_r1":"advance_settin*general*travel_time","data_r1":10,}
-//{"name_r1":"-","data_r1":1,}
-//{"serial":"100","data_w1":10,"name_r1":"advance_settin*general*travel_time","data_r1":10,}
-
-  
-  /*i++;
-
-  if( i>5 ){ i=0;
-    advance_serial_F=1;
-    //advance_serial_F=1;
-  }*/
 
   while( Serial.available() == 0 ){}
-  delay(100);
-  Serial.println(".");
+  delay(10);
+  Serial.println("*");
 
   if ( Serial.available() > 0 ){ 
 
-    while( Serial.available() > 0 ){
+    while( 1 ){
+      while( Serial.available() > 0 ){
 
-      char data=0;
-      data = Serial.read();
+        char data=0;
+        data = Serial.read();
 
-      temp[temp_i] = data;
-      temp_i++;
+        temp[temp_i] = data;
+        temp_i++;
 
+      }
+      delay(10);
+      if( Serial.available() == 0 )break;
     }
 
     temp[temp_i] = '\n';
 
+    //Serial.println(temp);
+    Serial.println("#");
+
     if( strstr(temp,"}") - (char *)&temp[0] > 0  ){
 
-      //advance_serial_F=1;
-      //Serial.println(temp);
+      Serial.println("ESP_GET_JSON");
 
       deserializeJson(doc, temp);
       read_json_advance();
-
-      uart_data.remove(0, uart_data.length()+1);
-
-      Serial.println("****");
 
     }
 
     memset( temp ,0,200);
     temp_i=0;
-    
   }
-
-  /*if( advance_send_F == 1 ){ advance_send_F=0;
-    Serial.println("advance_send_F ->");
-    Serial.print("advance_name_w1 = ");
-    Serial.println( advance_json_name_w1);
-    Serial.print("advance_data_w1 = ");
-    Serial.println( advance_json_data_w1);
-    Serial.println("--------------");
-    Serial.println(" ");
-    Serial.println(" ");
-    Serial.println(" ");
-  }
-
-  if( advance_read_F == 1 ){ advance_read_F=0;
-    Serial.println("advance_read_F ->");
-    Serial.print("advance_name_r1 = ");
-    Serial.println( advance_json_name_r1);
-    Serial.print("advance_data_r1 = ");
-    Serial.println( advance_json_data_r1);
-    Serial.println("--------------");
-    Serial.println(" ");
-    Serial.println(" ");
-    Serial.println(" ");
-  }*/
 
 }
