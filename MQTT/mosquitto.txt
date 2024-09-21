@@ -1,0 +1,12 @@
+cd "c:\program Files\mosquitto"
+
+mosquitto -h
+
+netstat -a
+
+net stop mosquitto
+
+net start mosquitto
+
+mosquitto -c mosquitto.conf -v
+

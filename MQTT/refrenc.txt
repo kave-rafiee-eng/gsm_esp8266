@@ -1,16 +1,6 @@
-cd "c:\program Files\mosquitto"
 
-mosquitto -h
 
-https://dfea-5-123-13-144.ngrok-free.app/GSM_RAVIS/mqtt/mqtt_btn.php
 
-netstat -a
-
-net stop mosquitto
-
-net start mosquitto
-
-mosquitto -c mosquitto.conf -v
 
 
 https://www.youtube.com/watch?v=ILux3oIxhVs // How to enable Websockets in Mosquitto MQTT broker?
@@ -21,8 +11,5 @@ https://www.youtube.com/watch?v=4ZEPPQLY5o4 // Install Mosquitto MQTT Broker on 
 
 https://www.youtube.com/watch?v=iFkGicjM4RY // How To Expose XAMPP localhost To The Internet Using ngrok
 
-ngrok tcp 9001
 
-https://www.hivemq.com/demos/websocket-client/
 
-https://testclient-cloud.mqtt.cool/
