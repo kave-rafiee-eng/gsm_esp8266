@@ -15,6 +15,12 @@ unsigned long lastMsg = 0;
 char msg[MSG_BUFFER_SIZE];
 int value = 0;
 
+DynamicJsonDocument doc(1000);
+
+
+int serial_device=0;
+bool serial_get=0;
+
 void setup_wifi() {
 
   delay(10);
@@ -80,7 +86,12 @@ void reconnect() {
       // Once connected, publish an announcement...
       client.publish("outTopic", "hello world");
       // ... and resubscribe
-      client.subscribe("server");
+
+      char str[100];
+      sprintf(str,"server/%d",serial_device);
+      client.subscribe(str);
+
+
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -121,12 +132,17 @@ void setup() {
   client.setCallback(callback);
 }
 
+
 void loop() {
 
-  if (!client.connected()) {
-    reconnect();
+  if( serial_get == 1 ){
+
+    if (!client.connected()) {
+      reconnect();
+    }
+    client.loop();
   }
-  client.loop();
+
   
   while (WiFi.status() != WL_CONNECTED) {
     if( Serial.available() > 0 ) { 
@@ -166,20 +182,39 @@ void loop() {
 
     temp[temp_i] = '\n';
 
+    if( strstr(temp,"}") - (char *)&temp[0] > 0  ){
+
+      Serial.println("ESP_GET_JSON");
+
+      deserializeJson(doc, temp);
+      String serial = doc["serial"];
+      char temp_serial[50];
+
+      if( serial == "null"){}
+      else { 
+        //serial.toCharArray(temp_serial, serial.length()+1);
+        //strncpy(advance_json_serial, temp_serial, sizeof advance_json_serial);   
+
+       serial_device = serial.toInt();
+       serial_get = 1;
+
+       Serial.println("serial_get---");
+
+      }
+
+    }
+
     //Serial.print("DATA = ");
     //Serial.println(temp);
 
-    DynamicJsonDocument doc(1024);
+    if( serial_get == 1 ){ client.publish("gsm", temp); 
+      Serial.println("{\"@empty\":\"1\",}");
+    }
+    else{  Serial.println("{\"@empty\":\"1\",\"@mass\":\"serial_not_init\"}"); }
 
-    /*if( status == 1 )doc["btn"] = "set";
-    else doc["btn"] = "clear";*/
-    doc["btn"] = temp;
 
-    char mqtt_message[128];
-    serializeJson(doc, mqtt_message);
-
-    client.publish("gsm", temp);
-
-    Serial.println("{\"@empty\":\"1\",}");
+    
   }
 }
+
+//{serial:"100",}
