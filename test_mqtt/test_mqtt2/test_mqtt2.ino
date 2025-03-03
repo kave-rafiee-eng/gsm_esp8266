@@ -6,7 +6,8 @@
 
 const char* ssid = "kave";
 const char* password = "123456789";
-const char* mqtt_server =  "84.47.232.10";
+//const char* mqtt_server =  "84.47.232.10";
+const char* mqtt_server =  "ravis-gsm.ir";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -20,6 +21,8 @@ DynamicJsonDocument doc(1000);
 
 int serial_device=0;
 bool serial_get=0;
+bool en_user_get=0;
+bool test_server_get=0;
 
 void setup_wifi() {
 
@@ -188,7 +191,7 @@ void loop() {
 
       deserializeJson(doc, temp);
       String serial = doc["serial"];
-      char temp_serial[50];
+      //char temp_serial[50];
 
       if( serial == "null"){}
       else { 
@@ -202,13 +205,54 @@ void loop() {
 
       }
 
+      String en_user = doc["en_user"];
+
+      if( en_user == "null"){}
+      else { 
+
+       en_user_get = 1;
+
+       Serial.println("en_user---");
+
+      }
+
+      String test_server = doc["TEST"];
+
+      if( test_server == "null"){}
+      else { 
+
+       test_server_get = 1;
+
+       Serial.println("test_server_get---");
+
+      }
+
+
     }
 
     //Serial.print("DATA = ");
     //Serial.println(temp);
 
-    if( serial_get == 1 ){ client.publish("gsm", temp); 
-      Serial.println("{\"@empty\":\"1\",}");
+    if( serial_get == 1 ){  
+
+ 
+      if( en_user_get == 1 ){ en_user_get=0;
+
+        client.publish("gsm", temp); 
+        Serial.println("{\"@empty\":\"2\",}");
+      }
+      else if( test_server_get == 1 ){ test_server_get=0;
+        client.publish("gsm", temp); 
+        Serial.println("{\"@empty\":\"3\",}");     
+      }
+      else{
+        char str[100];
+        sprintf(str,"gsm/%d",serial_device);
+        
+        client.publish(str, temp); 
+        Serial.println("{\"@empty\":\"1\",}");
+      }
+
     }
     else{  Serial.println("{\"@empty\":\"1\",\"@mass\":\"serial_not_init\"}"); }
 
