@@ -23,6 +23,7 @@ int serial_device=0;
 bool serial_get=0;
 bool en_user_get=0;
 bool test_server_get=0;
+bool status_get=0;
 
 void setup_wifi() {
 
@@ -161,13 +162,13 @@ void loop() {
   }
 
 
-  char temp[300];
-  char mqtt_message[300];
-  char temp_i=0;
+  char temp[1000];
+
+  int temp_i=0;
 
   if ( Serial.available() > 0 ){ 
 
-    memset( temp ,0,300);
+    memset( temp ,0,1000);
 
     while( 1 ){
       while( Serial.available() > 0 ){
@@ -227,6 +228,16 @@ void loop() {
 
       }
 
+      String status = doc["status"];
+
+      if( status == "null"){}
+      else { 
+
+       status_get = 1;
+
+       Serial.println("status---");
+
+      }
 
     }
 
@@ -235,8 +246,10 @@ void loop() {
 
     if( serial_get == 1 ){  
 
- 
-      if( en_user_get == 1 ){ en_user_get=0;
+      if( status_get == 1 ){ status_get=0;
+        Serial.println("{\"@empty\":\"2\",}");
+      }
+      else if( en_user_get == 1 ){ en_user_get=0;
 
         client.publish("gsm", temp); 
         Serial.println("{\"@empty\":\"2\",}");
@@ -246,7 +259,7 @@ void loop() {
         Serial.println("{\"@empty\":\"3\",}");     
       }
       else{
-        char str[100];
+        char str[1000];
         sprintf(str,"gsm/%d",serial_device);
         
         client.publish(str, temp); 
@@ -256,9 +269,8 @@ void loop() {
     }
     else{  Serial.println("{\"@empty\":\"1\",\"@mass\":\"serial_not_init\"}"); }
 
-
-    
   }
 }
 
-//{serial:"100",}
+//{serial:"834",status:"1"}
+
